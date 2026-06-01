@@ -11,6 +11,14 @@ const authRoutes = require('./routes/auth');
 const customerRoutes = require('./routes/customers');
 const orderRoutes = require('./routes/orders');
 const measurementRoutes = require('./routes/measurements');
+const employeeRoutes = require('./routes/employees');
+const paymentRoutes = require('./routes/payments');
+const appointmentRoutes = require('./routes/appointments');
+const pickupRequestRoutes = require('./routes/pickupRequests');
+const inventoryRoutes = require('./routes/inventory');
+const expenseRoutes = require('./routes/expenses');
+const notificationRoutes = require('./routes/notifications');
+const invoiceRoutes = require('./routes/invoices');
 
 const app = express();
 app.use(cors());
@@ -32,6 +40,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/measurements', measurementRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/pickup-requests', pickupRequestRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 app.use((req, res) => {
   res.status(404).json({message: 'Endpoint not found'});

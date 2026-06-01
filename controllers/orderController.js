@@ -3,7 +3,23 @@ const Customer = require('../models/Customer');
 
 exports.createOrder = async (req, res, next) => {
   try {
-    const {customerId, garment, status, dueDate, notes, price} = req.body;
+    const {
+      customerId,
+      garment,
+      garmentType,
+      quantity,
+      fabricDetails,
+      designNotes,
+      trialDate,
+      deliveryDate,
+      status,
+      dueDate,
+      notes,
+      price,
+      advancePayment,
+      assignedTo,
+      designs,
+    } = req.body;
 
     if (!customerId || !garment) {
       return res.status(400).json({message: 'customerId and garment are required'});
@@ -17,11 +33,21 @@ exports.createOrder = async (req, res, next) => {
     const order = await Order.create({
       shop: req.userId,
       customer: customerId,
+      assignedTo,
       garment,
+      garmentType,
+      quantity,
+      fabricDetails,
+      designNotes,
+      trialDate,
+      deliveryDate,
       status,
       dueDate,
       notes,
       price,
+      advancePayment,
+      designs,
+      timeline: status ? [{status, note: 'Order created', changedBy: req.userId}] : undefined,
     });
 
     res.status(201).json({order});
