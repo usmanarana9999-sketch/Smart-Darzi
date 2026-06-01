@@ -93,9 +93,32 @@ exports.getOrder = async (req, res, next) => {
 
 exports.updateOrder = async (req, res, next) => {
   try {
-    const order = await Order.findOneAndUpdate({_id: req.params.id, shop: req.userId}, req.body, {
+    const update = {...req.body};
+
+    if (update.customerId) {
+      const customer = await Customer.findOne({_id: update.customerId, shop: req.userId});
+      if (!customer) {
+        return res.status(404).json({message: 'Customer not found'});
+      }
+      update.customer = update.customerId;
+      delete update.customerId;
+    }
+
+    if (update.price !== undefined || update.advancePayment !== undefined) {
+      const existingOrder = await Order.findOne({_id: req.params.id, shop: req.userId});
+      if (!existingOrder) {
+        return res.status(404).json({message: 'Order not found'});
+      }
+
+      const price = update.price !== undefined ? update.price : existingOrder.price;
+      const advancePayment =
+        update.advancePayment !== undefined ? update.advancePayment : existingOrder.advancePayment;
+      update.remainingBalance = Math.max((price || 0) - (advancePayment || 0), 0);
+    }
+
+    const order = await Order.findOneAndUpdate({_id: req.params.id, shop: req.userId}, update, {
       new: true,
-    });
+    }).populate('customer', 'name phone');
 
     if (!order) {
       return res.status(404).json({message: 'Order not found'});

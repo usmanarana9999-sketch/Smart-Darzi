@@ -77,15 +77,50 @@ exports.getMeasurement = async (req, res, next) => {
 
 exports.updateMeasurement = async (req, res, next) => {
   try {
-    const measurement = await Measurement.findOneAndUpdate(
-      {_id: req.params.id, shop: req.userId},
-      req.body,
-      {new: true}
-    );
+    const existingMeasurement = await Measurement.findOne({_id: req.params.id, shop: req.userId});
 
-    if (!measurement) {
+    if (!existingMeasurement) {
       return res.status(404).json({message: 'Measurement not found'});
     }
+
+    const update = {...req.body};
+
+    if (update.customerId) {
+      const customer = await Customer.findOne({_id: update.customerId, shop: req.userId});
+      if (!customer) {
+        return res.status(404).json({message: 'Customer not found'});
+      }
+      update.customer = update.customerId;
+      delete update.customerId;
+    }
+
+    if (update.orderId) {
+      const order = await Order.findOne({_id: update.orderId, shop: req.userId});
+      if (!order) {
+        return res.status(404).json({message: 'Order not found'});
+      }
+      update.order = update.orderId;
+      delete update.orderId;
+    }
+
+    const updateOperation = {$set: update};
+
+    if (update.values) {
+      updateOperation.$push = {
+        history: {
+          values: existingMeasurement.values,
+          notes: existingMeasurement.notes,
+        },
+      };
+    }
+
+    const measurement = await Measurement.findOneAndUpdate(
+      {_id: req.params.id, shop: req.userId},
+      updateOperation,
+      {new: true}
+    )
+      .populate('customer', 'name phone')
+      .populate('order', 'garment status');
 
     res.json({measurement});
   } catch (err) {
