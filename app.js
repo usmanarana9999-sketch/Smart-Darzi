@@ -19,6 +19,7 @@ const inventoryRoutes = require('./routes/inventory');
 const expenseRoutes = require('./routes/expenses');
 const notificationRoutes = require('./routes/notifications');
 const invoiceRoutes = require('./routes/invoices');
+const shopSettingsRoutes = require('./routes/shopSettings');
 
 const app = express();
 app.use(cors());
@@ -48,6 +49,7 @@ app.use('/api/inventory', inventoryRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invoices', invoiceRoutes);
+app.use('/api/shop-settings', shopSettingsRoutes);
 
 app.use((req, res) => {
   res.status(404).json({message: 'Endpoint not found'});
