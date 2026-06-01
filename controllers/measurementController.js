@@ -4,7 +4,7 @@ const Order = require('../models/Order');
 
 exports.createMeasurement = async (req, res, next) => {
   try {
-    const {customerId, orderId, category, values, notes} = req.body;
+    const {customerId, orderId, profileName, relation, garmentType, category, values, notes} = req.body;
 
     if (!customerId || !values) {
       return res.status(400).json({message: 'customerId and values are required'});
@@ -26,6 +26,9 @@ exports.createMeasurement = async (req, res, next) => {
       shop: req.userId,
       customer: customerId,
       order: orderId,
+      profileName,
+      relation,
+      garmentType,
       category,
       values,
       notes,
@@ -39,7 +42,13 @@ exports.createMeasurement = async (req, res, next) => {
 
 exports.getMeasurements = async (req, res, next) => {
   try {
-    const measurements = await Measurement.find({shop: req.userId})
+    const query = {shop: req.userId};
+
+    if (req.query.customerId) {
+      query.customer = req.query.customerId;
+    }
+
+    const measurements = await Measurement.find(query)
       .populate('customer', 'name phone')
       .populate('order', 'garment status')
       .sort({createdAt: -1});

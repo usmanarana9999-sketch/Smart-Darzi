@@ -58,7 +58,13 @@ exports.createOrder = async (req, res, next) => {
 
 exports.getOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({shop: req.userId})
+    const query = {shop: req.userId};
+
+    if (req.query.customerId) {
+      query.customer = req.query.customerId;
+    }
+
+    const orders = await Order.find(query)
       .populate('customer', 'name phone')
       .sort({createdAt: -1});
 
