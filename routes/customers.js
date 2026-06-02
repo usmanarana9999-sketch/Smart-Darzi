@@ -9,7 +9,7 @@ const {
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
-router.use(auth);
+router.use(auth, auth.requireWorkshopRole);
 
 router.post('/', createCustomer);
 router.get('/', getCustomers);

@@ -8,7 +8,7 @@ const createToken = (user) => {
   }
 
   return jwt.sign(
-    {userId: user._id, phone: user.phone},
+    {userId: user._id, phone: user.phone, role: user.role},
     process.env.JWT_SECRET,
     {expiresIn: '12h'}
   );
@@ -16,9 +16,10 @@ const createToken = (user) => {
 
 exports.signup = async (req, res, next) => {
   try {
-    const {shopName, specialty, phone, password, logoUrl} = req.body;
+    const {shopName, name, specialty, phone, password, logoUrl, role} = req.body;
+    const accountRole = role === 'CUSTOMER' ? 'CUSTOMER' : 'OWNER';
 
-    if (!shopName || !phone || !password) {
+    if (!phone || !password || (accountRole === 'OWNER' && !shopName)) {
       return res.status(400).json({message: 'shopName, phone, and password are required'});
     }
 
@@ -31,10 +32,12 @@ exports.signup = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const user = await User.create({
-      shopName,
+      shopName: accountRole === 'CUSTOMER' ? shopName || name || 'Smart Darzi Customer' : shopName,
+      name,
       specialty,
       phone,
       password: hashedPassword,
+      role: accountRole,
       logoUrl,
     });
 
@@ -44,8 +47,10 @@ exports.signup = async (req, res, next) => {
       user: {
         id: user._id,
         shopName: user.shopName,
+        name: user.name,
         specialty: user.specialty,
         phone: user.phone,
+        role: user.role,
         logoUrl: user.logoUrl,
       },
       token,
@@ -78,8 +83,10 @@ exports.login = async (req, res, next) => {
       user: {
         id: user._id,
         shopName: user.shopName,
+        name: user.name,
         specialty: user.specialty,
         phone: user.phone,
+        role: user.role,
         logoUrl: user.logoUrl,
       },
       token,

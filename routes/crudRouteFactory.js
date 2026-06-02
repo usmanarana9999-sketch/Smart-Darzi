@@ -6,7 +6,7 @@ const createCrudRouter = (Model, resourceName, options) => {
   const router = express.Router();
   const controller = createCrudController(Model, resourceName, options);
 
-  router.use(auth);
+  router.use(auth, auth.requireWorkshopRole);
   router.post('/', controller.create);
   router.get('/', controller.list);
   router.get('/:id', controller.get);
