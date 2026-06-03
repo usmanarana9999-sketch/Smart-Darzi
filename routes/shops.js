@@ -1,7 +1,11 @@
 const express = require('express');
 const User = require('../models/User');
 
+const {getShopSettingsPublic} = require('../controllers/shopSettingsController');
+
 const router = express.Router();
+
+router.get('/:id/settings', getShopSettingsPublic);
 
 router.get('/', async (req, res, next) => {
   try {

@@ -144,3 +144,22 @@ exports.updateShopSettings = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getShopSettingsPublic = async (req, res, next) => {
+  try {
+    const shopId = req.params.id || req.params.shopId;
+    const user = await User.findById(shopId).select('shopName name phone logoUrl specialty');
+    if (!user) {
+      return res.status(404).json({message: 'Shop not found'});
+    }
+
+    let settings = await ShopSettings.findOne({shop: shopId});
+    if (!settings) {
+      settings = createDefaults(shopId, user);
+    }
+
+    res.json({user, settings});
+  } catch (err) {
+    next(err);
+  }
+};
