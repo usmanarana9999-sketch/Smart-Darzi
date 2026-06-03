@@ -1,5 +1,6 @@
 const express = require('express');
 const {
+  createCustomerOrder,
   createOrder,
   getOrders,
   getOrder,
@@ -9,6 +10,7 @@ const {
 const auth = require('../middleware/authMiddleware');
 
 const router = express.Router();
+router.post('/customer', auth, createCustomerOrder);
 router.use(auth, auth.requireWorkshopRole);
 
 router.post('/', createOrder);

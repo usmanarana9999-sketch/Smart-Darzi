@@ -1,5 +1,73 @@
 const Order = require('../models/Order');
 const Customer = require('../models/Customer');
+const User = require('../models/User');
+
+exports.createCustomerOrder = async (req, res, next) => {
+  try {
+    const {
+      shopId,
+      garment,
+      garmentType,
+      quantity,
+      fabricDetails,
+      designNotes,
+      dueDate,
+      notes,
+      price,
+      advancePayment,
+    } = req.body;
+
+    if (!shopId || !garment) {
+      return res.status(400).json({message: 'shopId and garment are required'});
+    }
+
+    const shop = await User.findOne({_id: shopId, role: {$in: ['OWNER', 'MANAGER']}});
+    if (!shop) {
+      return res.status(404).json({message: 'Shop not found'});
+    }
+
+    const customerUser = await User.findById(req.userId).select('name phone email');
+    if (!customerUser) {
+      return res.status(401).json({message: 'Customer not found'});
+    }
+
+    let customer = await Customer.findOne({shop: shopId, user: req.userId});
+    if (!customer) {
+      customer = await Customer.create({
+        shop: shopId,
+        user: req.userId,
+        name: customerUser.name || customerUser.email || 'Customer',
+        phone: customerUser.phone,
+        email: customerUser.email,
+      });
+    }
+
+    const order = await Order.create({
+      shop: shopId,
+      customer: customer._id,
+      garment,
+      garmentType,
+      quantity,
+      fabricDetails,
+      designNotes,
+      dueDate,
+      notes,
+      price,
+      advancePayment,
+      timeline: [
+        {
+          status: 'Pending',
+          note: 'Order placed by customer',
+          changedBy: req.userId,
+        },
+      ],
+    });
+
+    res.status(201).json({order});
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.createOrder = async (req, res, next) => {
   try {
